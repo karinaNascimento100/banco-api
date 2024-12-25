@@ -40,6 +40,7 @@ Este projeto implementa uma API para realizar operações bancárias, como login
    DB_PASSWORD=sua_senha
    DB_NAME=banco
    JWT_SECRET=sua_chave_secreta
+   PORT=porta-da-api
    ```
 
 4. **Inicie o servidor**:
