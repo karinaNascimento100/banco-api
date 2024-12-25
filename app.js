@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const loginRoutes = require('./routes/loginRoutes');
 const transferenciaRoutes = require('./routes/transferenciaRoutes');
+const contaRoutes = require('./routes/contaRoutes');
 
 const gerenciarErros = require('./middleware/gerenciarErros');
 
@@ -16,6 +17,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/login', loginRoutes);
 app.use('/transferencia', transferenciaRoutes);
+app.use('/conta', contaRoutes);
 
 app.use(gerenciarErros);
 

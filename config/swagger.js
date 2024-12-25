@@ -1,2 +1,2 @@
-const swaggerDocument = require('../swagger/v1.json');
+const swaggerDocument = require('../swagger/swagger.json');
 module.exports = swaggerDocument;
