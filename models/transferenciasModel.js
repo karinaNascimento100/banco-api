@@ -9,7 +9,7 @@ async function inserirTransferencia(contaOrigem, contaDestino, valor, autenticad
 
 async function getTransferenciasPaginadas(limit, offset) {
     const [result] = await db.query(
-        'SELECT * FROM transferencias ORDER BY id DESC LIMIT ? OFFSET ?',
+        'SELECT transferencias.*, origem.titular AS titular_origem, destino.titular AS titular_destino FROM transferencias JOIN contas AS origem ON transferencias.conta_origem_id = origem.id JOIN contas AS destino ON transferencias.conta_destino_id = destino.id ORDER BY transferencias.id DESC LIMIT ? OFFSET ?',
         [parseInt(limit), parseInt(offset)]
     );
     return result;
