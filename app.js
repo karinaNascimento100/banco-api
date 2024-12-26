@@ -16,8 +16,8 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/login', loginRoutes);
-app.use('/transferencia', transferenciaRoutes);
-app.use('/conta', contaRoutes);
+app.use('/transferencias', transferenciaRoutes);
+app.use('/contas', contaRoutes);
 
 app.use(gerenciarErros);
 
