@@ -1,160 +1,148 @@
 
 # Banco API
 
-Este projeto implementa uma API para realizar operações bancárias, como login de usuário e transferências entre contas, com autenticação via **JWT**. A API realiza verificações de saldo, contas ativas e oferece segurança adicional para transferências grandes.
+Este projeto é uma API bancária com dois tipos de serviços: **REST** e **GraphQL**. Ele simula operações bancárias básicas, como consultar contas, realizar transferências e autenticar usuários. O serviço GraphQL usa Apollo Server e a API REST foi construída com Express.
 
-## Funcionalidades
+## Estrutura do Projeto
 
-- **Login de Usuário**: Realiza autenticação via nome de usuário e senha e retorna um token JWT.
-- **Transferências**: Permite transferências entre contas, com verificações de saldo e contas ativas, e segurança extra para transferências acima de R$ 5000.
-- **Consulta de Transferências**: Recupera o histórico de transferências realizadas com suporte à paginação.
+O projeto é dividido nas seguintes pastas:
 
-## Requisitos
-
-- **Node.js** (versão 16 ou superior)
-- **MySQL** ou outro banco de dados compatível com MySQL
-- **Postman** ou outro cliente HTTP para testar a API
-
-## Instalação
-
-1. **Clone o repositório**:
-
-   ```bash
-   git clone https://github.com/juliodelimas/banco-api.git
-   cd banco-api
-   ```
-
-2. **Instale as dependências**:
-
-   ```bash
-   npm install
-   ```
-
-3. **Configure o arquivo `.env`** com as variáveis de ambiente para o banco de dados e JWT:
-
-   Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
-
-   ```env
-   DB_HOST=localhost
-   DB_USER=seu_usuario
-   DB_PASSWORD=sua_senha
-   DB_NAME=banco
-   JWT_SECRET=sua_chave_secreta
-   PORT=porta-da-api
-   ```
-
-4. **Inicie o servidor**:
-
-   ```bash
-   npm run dev
-   ```
-
-   O servidor estará disponível em [http://localhost:3000](http://localhost:3000).
-
-## Endpoints da API
-
-### 1. **Login de Usuário**
-- **URL**: `/login`
-- **Método**: `POST`
-- **Descrição**: Autentica o usuário e retorna um token JWT.
-  
-- **Corpo da Requisição**:
-
-  ```json
-  {
-    "username": "usuario",
-    "senha": "senha"
-  }
-  ```
-
-- **Respostas**:
-  - `200 OK`: Token gerado com sucesso.
-  - `400 Bad Request`: Parâmetros de login ausentes.
-  - `401 Unauthorized`: Credenciais inválidas.
-
-### 2. **Realizar Transferência**
-- **URL**: `/transferencia`
-- **Método**: `POST`
-- **Descrição**: Realiza uma transferência entre contas, com verificações de saldo e contas ativas. Para transferências acima de R$ 5000,00, um token JWT é necessário.
-
-- **Autenticação**: **Requer token JWT no cabeçalho `Authorization`**.
-
-- **Corpo da Requisição**:
-
-  ```json
-  {
-    "contaOrigem": 1,
-    "contaDestino": 2,
-    "valor": 1500.00,
-    "token": "seu-token-jwt-aqui"
-  }
-  ```
-
-- **Respostas**:
-  - `201 Created`: Transferência realizada com sucesso.
-  - `400 Bad Request`: Parâmetros inválidos.
-  - `401 Unauthorized`: Token JWT inválido ou ausente.
-  - `422 Unprocessable Entity`: Erro de validação (ex. saldo insuficiente).
-  - `500 Internal Server Error`: Erro no servidor.
-
-### 3. **Listar Transferências**
-- **URL**: `/transferencia`
-- **Método**: `GET`
-- **Descrição**: Lista as transferências realizadas, com suporte à paginação.
-
-- **Parâmetros**:
-  - `page` (opcional): Página dos resultados (padrão: 1).
-  - `limit` (opcional): Número de resultados por página (padrão: 10).
-
-- **Respostas**:
-  - `200 OK`: Lista de transferências.
-  - `500 Internal Server Error`: Erro ao buscar transferências.
-
-## Documentação da API
-
-A documentação completa da API pode ser acessada através do **Swagger UI**:
-
-- **Swagger UI**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-
-## Estrutura do Banco de Dados
-
-As principais tabelas no banco de dados são:
-
-1. **contas**: Armazena as contas bancárias (id, titular, saldo, status).
-2. **transferencias**: Armazena as transferências realizadas (id, conta origem, conta destino, valor, data/hora, status).
-3. **usuarios**: Armazena os usuários (nome de usuário, senha).
-
-### SQL para criação das tabelas:
-
-```sql
-CREATE DATABASE banco;
-USE banco;
-
-CREATE TABLE contas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    titular VARCHAR(100) NOT NULL,
-    saldo DECIMAL(10, 2) NOT NULL,
-    ativa BOOLEAN DEFAULT TRUE
-);
-
-CREATE TABLE transferencias (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    conta_origem_id INT NOT NULL,
-    conta_destino_id INT NOT NULL,
-    valor DECIMAL(10, 2) NOT NULL,
-    data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
-    autenticada BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (conta_origem_id) REFERENCES contas(id),
-    FOREIGN KEY (conta_destino_id) REFERENCES contas(id)
-);
-
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    senha VARCHAR(255) NOT NULL
-);
+```
+project/
+├── src/
+│   ├── config/
+│   │   └── database.js          # Configuração de banco de dados
+│   ├── models/
+│   │   └── contaModel.js        # Modelos de dados reutilizáveis
+│   ├── services/
+│   │   ├── contaService.js      # Lógica de negócio (REST e GraphQL)
+│   │   ├── loginService.js
+│   │   └── transferenciaService.js
+│   └── utils/
+│       └── errorHandler.js      # Funções utilitárias e genéricas
+├── rest/
+│   ├── app.js                   # Configuração específica do REST
+│   ├── controllers/
+│   │   ├── contaController.js
+│   │   ├── loginController.js
+│   │   └── transferenciaController.js
+│   ├── middlewares/
+│   │   └── authMiddleware.js    # Middleware REST (autenticação, etc.)
+│   ├── routes/
+│   │   ├── contaRoutes.js
+│   │   ├── loginRoutes.js
+│   │   └── transferenciaRoutes.js
+├── graphql/
+│   ├── app.js                   # Configuração específica do GraphQL
+│   ├── resolvers/
+│   │   ├── index.js
+│   │   ├── queryResolvers.js
+│   │   └── mutationResolvers.js
+│   ├── schema/
+│   │   └── index.js             # Combina typeDefs e resolvers
+│   ├── typeDefs.js              # Definições de schema
+├── config/
+│   └── serverConfig.js          # Configurações comuns (porta, ambiente, etc.)
+├── .env                         # Variáveis de ambiente
+├── package.json
+└── README.md
 ```
 
-## Licença
+## Iniciando o Projeto
 
-Este projeto é licenciado sob a **MIT License**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+### **Requisitos**
+
+- Node.js (versão 16 ou superior)
+- MySQL (ou um banco de dados compatível)
+
+### **Instalação**
+
+1. Clone o repositório:
+    ```bash
+    git clone https://seu-repositorio.git
+    cd banco-api
+    ```
+
+2. Instale as dependências:
+    ```bash
+    npm install
+    ```
+
+3. Configure o banco de dados:
+    - Altere o arquivo `.env` com as credenciais do seu banco de dados.
+
+4. Suba os serviços:
+
+   **REST API**:  
+   Acesse a API REST rodando no **porta 3000**:
+   ```bash
+   npm run rest-api
+   ```
+
+   **GraphQL API**:  
+   Acesse a API GraphQL rodando no **porta 3001**:
+   ```bash
+   npm run graphql-api
+   ```
+
+### **Endpoints da API REST**
+
+A API REST expõe os seguintes endpoints:
+
+- **GET /contas**: Retorna todas as contas.
+- **GET /transferencias**: Retorna transferências com paginação (`page` e `limit` como parâmetros).
+- **POST /login**: Realiza o login e retorna um token JWT.
+- **POST /transferir**: Realiza uma transferência entre contas (precisa de MFA Token).
+
+### **Endpoints da API GraphQL**
+
+A API GraphQL usa o Apollo Server e está disponível na rota `/graphql` (porta **3001**).
+
+#### **Tipos de Dados**
+
+1. **Conta**
+   - Representa uma conta bancária.
+   
+2. **Transferência**
+   - Representa uma transferência entre contas.
+
+3. **AuthPayload**
+   - Representa a resposta de autenticação com o token JWT.
+
+#### **Queries**
+1. **contas**: Retorna todas as contas bancárias.
+2. **transferencias**: Retorna a lista de transferências realizadas, com suporte à paginação.
+
+#### **Mutations**
+1. **login**: Realiza o login e retorna um token JWT.
+2. **transferir**: Realiza uma transferência entre contas, validando o token MFA.
+
+#### **Exemplo de Requisição usando cURL**
+
+##### 1. **Login** (Mutation)
+
+```bash
+curl -X POST http://localhost:3001/graphql -H "Content-Type: application/json" -d '{
+  "query": "mutation { login(username: \"usuario\", senha: \"senha\") { token message } }"
+}'
+```
+
+##### 2. **Realizar Transferência** (Mutation)
+
+```bash
+curl -X POST http://localhost:3001/graphql -H "Content-Type: application/json" -H "Authorization: Bearer seu-token-jwt-aqui" -d '{
+  "query": "mutation { transferir(contaOrigem: 1, contaDestino: 2, valor: 1500.00, mfaToken: \"seu-token-mfa\") }"
+}'
+```
+
+##### 3. **Consultar Transferências** (Query)
+
+```bash
+curl -X POST http://localhost:3001/graphql -H "Content-Type: application/json" -d '{
+  "query": "query { transferencias(page: 1, limit: 10) { id conta_origem_id conta_destino_id valor data_hora } }"
+}'
+```
+
+---
+
+Com a implementação acima, o projeto está pronto para ser executado. Sinta-se à vontade para explorar a API REST e a API GraphQL conforme necessário!

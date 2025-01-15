@@ -1,4 +1,4 @@
-const transferenciasService = require('../services/transferenciasService');
+const transferenciasService = require('../../src/services/transferenciasService');
 
 async function realizarTransferencia(req, res, next) {
     const { contaOrigem, contaDestino, valor, token } = req.body;

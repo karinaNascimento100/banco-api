@@ -6,7 +6,7 @@ async function getContas() {
 }
 
 async function getContaById(id) {
-    const [result] = await db.query('SELECT saldo, ativa FROM contas WHERE id = ?', [id]);
+    const [result] = await db.query('SELECT id, titular, saldo, ativa FROM contas WHERE id = ?', [id]);
     return result[0];
 }
 

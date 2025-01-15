@@ -1,4 +1,4 @@
-const authService = require('../services/loginService');
+const authService = require('../../src/services/loginService');
 const createError = require('http-errors');
 
 async function login(req, res, next) {
