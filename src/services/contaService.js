@@ -11,10 +11,7 @@ async function getContas(page = 1, limit = 10) {
 
 async function getContaById(id) {
     const contas = await contasModel.getContaById(id)
-    console.log(contas)
-    return {
-        contas
-    };
+    return contas;
 }
 
 module.exports = {

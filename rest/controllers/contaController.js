@@ -9,6 +9,17 @@ async function getContas(req, res, next) {
     }
 }
 
+async function getConta(req, res, next) {
+    const { id } = req.params;
+    try {
+        const result = await contaService.getContaById(id);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
-    getContas
+    getContas,
+    getConta
 };
