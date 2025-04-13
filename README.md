@@ -10,6 +10,88 @@ O projeto é composto por duas APIs independentes que oferecem suporte a operaç
 
 ---
 
+## Regras de Negócio
+
+### Serviço de Contas
+
+#### Regras para obter contas:
+
+- A consulta de contas retorna uma lista paginada de contas, com um limite por página e uma página especificada.
+
+#### Regras para obter conta por ID:
+
+- A consulta de uma conta por ID deve retornar os detalhes da conta correspondente.
+
+### Serviço de Autenticação de Usuário
+
+#### Regras de autenticação:
+
+- O nome de usuário e a senha são obrigatórios.
+
+- O sistema valida se o nome de usuário e a senha fornecidos são corretos.
+
+- Se as credenciais estiverem incorretas, o sistema retorna um erro informando que o usuário ou senha são inválidos.
+
+#### Regras de geração de token:
+
+- O token gerado deve ter um tempo de expiração de 1 hora.
+
+#### Regras de verificação de token:
+
+- O token de autenticação deve ser verificado para garantir que seja válido.
+
+- Se o token for inválido ou expirado, o sistema retorna um erro de autenticação.
+
+### Serviço de Transferências
+
+#### Regras para realizar transferência:
+
+- O valor mínimo para transferências é de R$10,00.
+
+- Transferências acima de R$5.000,00 requerem um token de autenticação (token específico '123456').
+
+- As contas de origem e destino devem estar ativas.
+
+- A conta de origem deve ter saldo suficiente para realizar a transferência.
+
+#### Regras para buscar transferências:
+
+- As transferências podem ser consultadas de forma paginada, com limite de itens por página e página especificada.
+
+- Deve ser possível consultar todas as transferências realizadas.
+
+#### Regras para atualizar transferências:
+
+- Transferências podem ser atualizadas, mas o valor de atualização não pode ser inferior a R$10,00.
+
+- Deve ser validado se as contas de origem e destino existem e estão ativas.
+
+- O saldo da conta de origem deve ser verificado antes de realizar a atualização.
+
+- Transferências acima de R$5.000,00 também requerem autenticação.
+
+#### Regras para modificar transferências:
+
+- O valor de uma transferência pode ser modificado, mas o novo valor deve ser superior ou igual a R$10,00.
+
+- As contas de origem e destino devem estar ativas e existir.
+
+- O saldo das contas de origem e destino deve ser verificado antes da modificação.
+
+#### Regras para remover transferências:
+
+- A remoção de uma transferência deve reverter os saldos das contas de origem e destino.
+
+- Caso a transferência não seja encontrada, o sistema retorna um erro.
+
+- A conta de origem e a conta de destino devem existir e estar ativas.
+
+#### Outras Regras Gerais
+
+- Em todos os casos de falha (como saldo insuficiente ou contas inativas), o sistema deve retornar uma mensagem de erro detalhada e apropriada.
+
+- As transferências são realizadas de forma síncrona e qualquer falha no processo de transferência gera um erro com uma mensagem explicativa.
+
 ## Pré-requisitos
 
 Antes de iniciar, certifique-se de que você tenha as seguintes ferramentas instaladas:
