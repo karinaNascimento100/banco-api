@@ -1,148 +1,194 @@
 
-# Banco API
+# Banco API - Documentação
 
-Este projeto é uma API bancária com dois tipos de serviços: **REST** e **GraphQL**. Ele simula operações bancárias básicas, como consultar contas, realizar transferências e autenticar usuários. O serviço GraphQL usa Apollo Server e a API REST foi construída com Express.
+## Visão Geral
+
+O projeto é composto por duas APIs independentes que oferecem suporte a operações financeiras, com uma arquitetura baseada em REST e GraphQL.
+
+- **API REST**: Roda na porta `3000` e gerencia endpoints de contas e transferências.
+- **API GraphQL**: Roda na porta `3001` e fornece operações para consultas e mutações no domínio financeiro.
+
+---
+
+## Pré-requisitos
+
+Antes de iniciar, certifique-se de que você tenha as seguintes ferramentas instaladas:
+
+- [Node.js](https://nodejs.org/)
+- [MySQL](https://www.mysql.com/)
+- Gerenciador de pacotes npm (vem com o Node.js)
+
+---
+
+## Instruções de Configuração
+
+### 1. Variáveis de Ambiente (`.env`)
+Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
+
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=banco
+JWT_SECRET=sua_chave_secreta
+PORT=3000
+GRAPHQLPORT=3001
+```
+
+### 2. Inicialização do Banco de Dados
+
+1. Crie o banco de dados e suas tabelas executando o script abaixo no MySQL:
+   ```sql
+   CREATE DATABASE banco;
+   USE banco;
+
+   CREATE TABLE contas (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       titular VARCHAR(100) NOT NULL,
+       saldo DECIMAL(10, 2) NOT NULL,
+       ativa BOOLEAN DEFAULT TRUE
+   );
+
+   CREATE TABLE transferencias (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       conta_origem_id INT NOT NULL,
+       conta_destino_id INT NOT NULL,
+       valor DECIMAL(10, 2) NOT NULL,
+       data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+       autenticada BOOLEAN DEFAULT FALSE,
+       FOREIGN KEY (conta_origem_id) REFERENCES contas(id),
+       FOREIGN KEY (conta_destino_id) REFERENCES contas(id)
+   );
+
+   CREATE TABLE usuarios (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       username VARCHAR(50) NOT NULL UNIQUE,
+       senha VARCHAR(255) NOT NULL
+   );
+   ```
+
+2. Verifique se as tabelas foram criadas corretamente:
+   ```sql
+   USE banco;
+   SHOW TABLES;
+   ```
+
+---
+
+## Instruções de Execução
+
+### 1. Instalar Dependências
+Execute o comando abaixo na raiz do projeto:
+```bash
+npm install
+```
+
+### 2. Executar APIs
+- Para iniciar a **API REST**:
+  ```bash
+  npm run rest-api
+  ```
+- Para iniciar a **API GraphQL**:
+  ```bash
+  npm run graphql-api
+  ```
+
+---
+
+## Serviços Disponíveis Após a Inicialização
+
+### ApolloServer
+Depois de iniciar a API GraphQL, o ApolloServer estará disponível na porta `3001`. Ele oferece uma interface interativa no endereço [http://localhost:3001/graphql](http://localhost:3001/graphql), onde é possível explorar o schema, testar queries e mutações, e visualizar resultados em tempo real.
+
+O ApolloServer é uma biblioteca amplamente utilizada para implementar servidores GraphQL. Ele simplifica o desenvolvimento, fornecendo suporte para definir schemas, resolvers, autenticação, entre outros recursos.
+
+### Swagger
+Após a inicialização da API REST, a documentação interativa estará disponível no Swagger, no endereço [http://localhost:3000/api-docs](http://localhost:3000/api-docs). Essa documentação permite:
+- Explorar os endpoints disponíveis.
+- Testar requisições diretamente pelo navegador.
+- Obter informações detalhadas sobre parâmetros, respostas e erros.
+
+Para visualizar o Swagger, certifique-se de que a API REST esteja em execução.
+
+---
 
 ## Estrutura do Projeto
 
-O projeto é dividido nas seguintes pastas:
-
-```
+```plaintext
 project/
 ├── src/
 │   ├── config/
-│   │   └── database.js          # Configuração de banco de dados
+│   │   └── database.js
 │   ├── models/
-│   │   └── contaModel.js        # Modelos de dados reutilizáveis
+│   │   └── contaModel.js
 │   ├── services/
-│   │   ├── contaService.js      # Lógica de negócio (REST e GraphQL)
+│   │   ├── contaService.js
 │   │   ├── loginService.js
 │   │   └── transferenciaService.js
 │   └── utils/
-│       └── errorHandler.js      # Funções utilitárias e genéricas
+│       └── errorHandler.js
 ├── rest/
-│   ├── app.js                   # Configuração específica do REST
+│   ├── app.js
 │   ├── controllers/
 │   │   ├── contaController.js
 │   │   ├── loginController.js
 │   │   └── transferenciaController.js
 │   ├── middlewares/
-│   │   └── authMiddleware.js    # Middleware REST (autenticação, etc.)
+│   │   └── authMiddleware.js
 │   ├── routes/
 │   │   ├── contaRoutes.js
 │   │   ├── loginRoutes.js
 │   │   └── transferenciaRoutes.js
 ├── graphql/
-│   ├── app.js                   # Configuração específica do GraphQL
+│   ├── app.js
 │   ├── resolvers/
 │   │   ├── index.js
 │   │   ├── queryResolvers.js
 │   │   └── mutationResolvers.js
 │   ├── schema/
-│   │   └── index.js             # Combina typeDefs e resolvers
-│   ├── typeDefs.js              # Definições de schema
+│   │   └── index.js
+│   ├── typeDefs.js
 ├── config/
-│   └── serverConfig.js          # Configurações comuns (porta, ambiente, etc.)
-├── .env                         # Variáveis de ambiente
+│   └── serverConfig.js
+├── .env
 ├── package.json
 └── README.md
 ```
 
-## Iniciando o Projeto
+---
 
-### **Requisitos**
+## GraphQL API
 
-- Node.js (versão 16 ou superior)
-- MySQL (ou um banco de dados compatível)
+### Endpoints
+- URL da API GraphQL: `http://localhost:3001/graphql`
 
-### **Instalação**
+### Definições do Schema (`typeDefs`)
+- **Queries**:
+  - `contas`: Retorna a lista de contas.
+  - `transferencias(page: Int, limit: Int)`: Retorna uma lista paginada de transferências.
+- **Mutations**:
+  - `login(username: String!, senha: String!)`: Autentica um usuário e retorna um token JWT.
+  - `transferir(contaOrigem: Int!, contaDestino: Int!, valor: Float!, mfaToken: String!)`: Realiza uma transferência.
 
-1. Clone o repositório:
-    ```bash
-    git clone https://seu-repositorio.git
-    cd banco-api
-    ```
+### Exemplo de Requisição com `curl`
 
-2. Instale as dependências:
-    ```bash
-    npm install
-    ```
-
-3. Configure o banco de dados:
-    - Altere o arquivo `.env` com as credenciais do seu banco de dados.
-
-4. Suba os serviços:
-
-   **REST API**:  
-   Acesse a API REST rodando no **porta 3000**:
-   ```bash
-   npm run rest-api
-   ```
-
-   **GraphQL API**:  
-   Acesse a API GraphQL rodando no **porta 3001**:
-   ```bash
-   npm run graphql-api
-   ```
-
-### **Endpoints da API REST**
-
-A API REST expõe os seguintes endpoints:
-
-- **GET /contas**: Retorna todas as contas.
-- **GET /transferencias**: Retorna transferências com paginação (`page` e `limit` como parâmetros).
-- **POST /login**: Realiza o login e retorna um token JWT.
-- **POST /transferir**: Realiza uma transferência entre contas (precisa de MFA Token).
-
-### **Endpoints da API GraphQL**
-
-A API GraphQL usa o Apollo Server e está disponível na rota `/graphql` (porta **3001**).
-
-#### **Tipos de Dados**
-
-1. **Conta**
-   - Representa uma conta bancária.
-   
-2. **Transferência**
-   - Representa uma transferência entre contas.
-
-3. **AuthPayload**
-   - Representa a resposta de autenticação com o token JWT.
-
-#### **Queries**
-1. **contas**: Retorna todas as contas bancárias.
-2. **transferencias**: Retorna a lista de transferências realizadas, com suporte à paginação.
-
-#### **Mutations**
-1. **login**: Realiza o login e retorna um token JWT.
-2. **transferir**: Realiza uma transferência entre contas, validando o token MFA.
-
-#### **Exemplo de Requisição usando cURL**
-
-##### 1. **Login** (Mutation)
-
+#### Consulta de Contas
 ```bash
-curl -X POST http://localhost:3001/graphql -H "Content-Type: application/json" -d '{
-  "query": "mutation { login(username: \"usuario\", senha: \"senha\") { token message } }"
-}'
+curl -X POST http://localhost:3001/graphql -H "Content-Type: application/json" -d '{"query": "{ contas { id titular saldo ativa } }"}'
 ```
 
-##### 2. **Realizar Transferência** (Mutation)
-
+#### Transferência de Fundos
 ```bash
-curl -X POST http://localhost:3001/graphql -H "Content-Type: application/json" -H "Authorization: Bearer seu-token-jwt-aqui" -d '{
-  "query": "mutation { transferir(contaOrigem: 1, contaDestino: 2, valor: 1500.00, mfaToken: \"seu-token-mfa\") }"
-}'
-```
-
-##### 3. **Consultar Transferências** (Query)
-
-```bash
-curl -X POST http://localhost:3001/graphql -H "Content-Type: application/json" -d '{
-  "query": "query { transferencias(page: 1, limit: 10) { id conta_origem_id conta_destino_id valor data_hora } }"
-}'
+curl -X POST http://localhost:3001/graphql -H "Content-Type: application/json" -d '{"query": "mutation { transferir(contaOrigem: 1, contaDestino: 2, valor: 100.0, mfaToken: \"123456\") }"}'
 ```
 
 ---
 
-Com a implementação acima, o projeto está pronto para ser executado. Sinta-se à vontade para explorar a API REST e a API GraphQL conforme necessário!
+## REST API
+
+### Endpoints
+Base URL: `http://localhost:3000`
+
+- **GET /contas**: Retorna todas as contas.
+- **POST /login**: Realiza a autenticação de um usuário.
+- **POST /transferencias**: Realiza uma transferência entre contas.
