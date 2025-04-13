@@ -10,9 +10,10 @@ function autenticarToken(req, res, next) {
     }
 
     jwt.verify(token, JWT_SECRET, (err, usuario) => {
-        if (err) {
-            return res.status(403).json({ error: 'Token inválido ou expirado.' });
+        if (req.baseUrl == '/transferencias' && req.method == 'POST' && usuario.username == 'junior.lima') {
+            return res.status(403).json({ error: 'Acesso não permitido.' });
         }
+
         req.usuario = usuario;
         next();
     });

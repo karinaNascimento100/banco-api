@@ -96,6 +96,7 @@
           "201": { "description": "Transferência realizada com sucesso" },
           "400": { "description": "Parâmetros de transferência inválidos" },
           "401": { "description": "Autenticação necessária ou inválida" },
+          "403": { "description": "Acesso não permitido." },
           "422": { "description": "Erro de validação de dados (saldo insuficiente, contas inativas, etc.)" },
           "500": { "description": "Erro interno do servidor" }
         }
